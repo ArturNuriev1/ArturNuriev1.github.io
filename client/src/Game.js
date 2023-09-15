@@ -1,8 +1,8 @@
 import Phaser from '../node_modules/phaser'
 
-import Card from './card'
+import Card from './card.js'
 
-import Zone from './Zone'
+import Zone from 'Zone'
 
 import Calc from './calc'
 
