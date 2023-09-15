@@ -1,12 +1,12 @@
-import Phaser from '../node_modules/phaser'
+import Phaser from '../node_modules/phaser.js'
 
 import Card from './card.js'
 
-import Zone from './Zone'
+import Zone from './Zone.js'
 
-import Calc from './calc'
+import Calc from './calc.js'
 
-import io from '../node_modules/socket.io-client'
+import io from '../node_modules/socket.io-client.js'
 
 export default class Game extends Phaser.Scene {
 	constructor() {
