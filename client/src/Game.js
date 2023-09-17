@@ -8,8 +8,6 @@ import Calc from './calc.js'
 
 import io from 'socket.io-client'
 
-app.use("/src", express.static('./static/'));
-
 export default class Game extends Phaser.Scene {
 	constructor() {
 		super('Game')
