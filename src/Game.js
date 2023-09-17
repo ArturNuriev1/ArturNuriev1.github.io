@@ -6,7 +6,7 @@ import Zone from './Zone.js'
 
 import Calc from './calc.js'
 
-import io from './node_modules/socket.io-client'
+import io from 'socket.io-client'
 
 export default class Game extends Phaser.Scene {
 	constructor() {
