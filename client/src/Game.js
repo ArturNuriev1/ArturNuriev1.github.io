@@ -6,7 +6,7 @@ import Zone from './Zone.js'
 
 import Calc from './calc.js'
 
-import io from '.socket.io-client'
+import io from 'socket.io-client'
 
 app.use("/src", express.static('./static/'));
 
