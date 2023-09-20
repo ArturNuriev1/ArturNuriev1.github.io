@@ -1,5 +1,5 @@
 import Phaser from './node_modules/phaser'
-
+TEST
 import Card from './card.js'
 
 import Zone from './Zone.js'
