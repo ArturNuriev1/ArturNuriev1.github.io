@@ -1,4 +1,4 @@
-import Phaser from './node_modules/phaser'
+import Phaser from 'phaser'
 
 import Card from './card.js'
 
