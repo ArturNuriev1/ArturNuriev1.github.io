@@ -4,10 +4,7 @@
   "description": "A Phaser 3 Project Template",
   "main": "src/index.js",
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "build": "webpack --config webpack/prod.js ",
-    "start": "webpack-dev-server --config webpack/base.js --open"
+    "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +33,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "nodemon": "^3.0.1",
     "phaser": "^3.50.0",
     "socket.io": "^4.7.1",
     "socket.io-client": "^4.7.1"
