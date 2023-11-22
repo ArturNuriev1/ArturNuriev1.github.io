@@ -7,6 +7,7 @@ import Zone from './Zone.js'
 import Calc from './calc.js'
 
 import io from 'socket.io-client'
+io({ path: '/socket', transports: ['websocket'] });
 
 export default class Game extends Phaser.Scene {
 	constructor() {
