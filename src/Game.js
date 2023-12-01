@@ -57,7 +57,7 @@ export default class Game extends Phaser.Scene {
 
         
         this.socket.on('connect', function () {
-            console.log('Connected! AAA', this.socket.socket.sessionid, 'BBB', self.socket.id)
+            console.log('Connected! AAA', self.socket.id)
         })
 
         this.socket.on('isPlayerA', function () {
