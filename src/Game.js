@@ -61,6 +61,7 @@ export default class Game extends Phaser.Scene {
         })
 
         this.socket.on('isPlayerA', function () {
+            console.log('You are Player A')
         	self.isPlayerA = true
         })
 
