@@ -55,6 +55,8 @@ export default class Game extends Phaser.Scene {
 		// this.socket = io('http://localhost:3000')
 		this.socket = io('https://air-poker-server1.adaptable.app')
 
+        console.log(this.socket.id)
+
         this.socket.on('connect', function () {
         	console.log('Connected!')
         })
