@@ -557,7 +557,7 @@ export default class Game extends Phaser.Scene {
 
         this.checkVictory = () => {
             if (pBios <= 0) {
-
+                
             }
             if (eBios <= 0) {
 
