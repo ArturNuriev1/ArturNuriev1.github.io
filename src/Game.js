@@ -32,15 +32,11 @@ export default class Game extends Phaser.Scene {
         let newPlayer = new Card(self)
         let tempZone
         let ante = 1
-        let suits
         let pBios = 25
         let eBios = 25
         let callVal = 1
-        let result = ' '
-        let betting = false
         let firstBet = 2
         let enemyBet = 0
-        let playerbet = 0
         let playerCalled = 0
         let enemyCalled = 0
         let prevBet = 0
@@ -52,17 +48,15 @@ export default class Game extends Phaser.Scene {
         
         let pot = 0
 
-		// this.socket = io('http://localhost:3000')
 		this.socket = io('https://air-poker-server1.adaptable.app')
-
         
         this.socket.on('connect', function () {
-            console.log('Connected! AAA', self.socket.id)
+            console.log('Connected! ', self.socket.id)
         })
 
         this.socket.on('isPlayerA', function () {
             console.log('You are Player A')
-        	self.isPlayerA = true
+            self.isPlayerA = true
         })
 
         this.socket.on('dealCards', function () { //MAKE THIS SERVER SIDED
@@ -335,7 +329,6 @@ export default class Game extends Phaser.Scene {
             align:'justify'
         }).setOrigin(0)
 
-        //let personalText = this.add.text(672, 510, ' ', {
         let personalText = this.add.text(1082, 415, ' ', {
                 color: 'white', 
                 fontFamily: 'Bahnschrift', 
@@ -367,6 +360,7 @@ export default class Game extends Phaser.Scene {
         //     align:'center'
         // }).setOrigin(0.5)
 
+        let result = ' '
         let resultText = this.add.text(672, 510, result, {
             color: 'white', 
             fontFamily: 'Bahnschrift', 
@@ -398,6 +392,7 @@ export default class Game extends Phaser.Scene {
                         resultText.setText('')
                     }
                 })
+                self.checkVictory()
             }
         }
 
@@ -413,6 +408,7 @@ export default class Game extends Phaser.Scene {
                         resultText.setText('')
                     }
                 })
+                self.checkVictory()
             }
         })
 
@@ -470,6 +466,7 @@ export default class Game extends Phaser.Scene {
                         }
                     })
                     self.socket.emit('playerCalls', self.isPlayerA)
+                    self.checkVictory()
                 }
                 else {
                     pBios -= self.raiseAmount
@@ -509,6 +506,7 @@ export default class Game extends Phaser.Scene {
                         }
                     })
                     self.updateText()
+                    self.checkVictory()
                 }
                 else {
                     console.log(self.raiseAmount)
@@ -552,9 +550,23 @@ export default class Game extends Phaser.Scene {
             callNum.setText(callVal)
         }
 
+        // checkVictory
+        // calamities
+        // comment and style
+        // github
+
+        this.checkVictory = () => {
+            if (pBios <= 0) {
+
+            }
+            if (eBios <= 0) {
+
+            }
+        }
+
 		this.dealCards = () => {
             self.socket.emit('pickCards', self.isPlayerA)
-        	// for (let i = 0; i < 5; i++) {
+            // for (let i = 0; i < 5; i++) {
             //     let val = Phaser.Math.Between(6, 64)
             //     while (pickedVals.includes(val)) {
             //         val = Phaser.Math.Between(6, 64)
@@ -571,7 +583,7 @@ export default class Game extends Phaser.Scene {
             //     let playerCard = new Card(this)
             //     playerArray[i] = playerCard.render(475 + (i * 100), 645, 0, val2, i)
             // }
-    	}
+        }
 
         this.socket.on('cardsPicked', function (isA, playerVals, enemyVals) {
             if (isA != self.isPlayerA) {
