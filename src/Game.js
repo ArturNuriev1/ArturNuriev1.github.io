@@ -85,7 +85,6 @@ export default class Game extends Phaser.Scene {
             self.time.addEvent({
                 delay: 1000,
                 callback: () => {
-                    suits = words
                     tempImg.destroy()
                     tempImg2.destroy()
                     let tempCard = new Card(self)
