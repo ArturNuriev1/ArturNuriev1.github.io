@@ -47,8 +47,10 @@ export default class Game extends Phaser.Scene {
         let calc = new Calc(this)
         
         let pot = 0
-
-		this.socket = io('https://air-poker-server1.adaptable.app')
+        
+		this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
+		// this.socket = io('https://air-poker-server1.adaptable.app')
+		// this.socket = io('http://localhost:3000')
         
         this.socket.on('connect', function () {
             console.log('Connected! ', self.socket.id)
