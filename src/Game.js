@@ -48,7 +48,8 @@ export default class Game extends Phaser.Scene {
         
         let pot = 0
         
-		this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
+		this.socket = io('https://air-poker-server.onrender.com')
+		// this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
 		// this.socket = io('https://air-poker-server1.adaptable.app')
 		// this.socket = io('http://localhost:3000')
         
