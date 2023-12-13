@@ -16,6 +16,7 @@ export default class Game extends Phaser.Scene {
 	preload() {
         this.load.image('bg', './bg2.jpg')
 		this.load.image('card', './card.png')
+        this.load.image('load', './load.png')
 	}
 
 	create() {
@@ -40,13 +41,17 @@ export default class Game extends Phaser.Scene {
         let playerCalled = 0
         let enemyCalled = 0
         let prevBet = 0
+        let calamity = 0
         this.raiseAmount = 0
+        let pot = 0
 
         this.isPlayerA = false
         
         let calc = new Calc(this)
-        
-        let pot = 0
+
+        this.add.image(650, 360, 'bg').setScale(1, 1)
+
+        let load = this.add.image(270, 380, 'load').setScale(1, 1)
         
 		this.socket = io('https://air-poker-server.onrender.com')
 		// this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
@@ -157,24 +162,7 @@ export default class Game extends Phaser.Scene {
             this.updateText()
         }
 
-        this.add.image(650, 360, 'bg').setScale(1, 1)
-
 		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setInteractive()
-
-		// this.nextText = this.add.text(100, 380, ['NEXT ROUND']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setInteractive()
-
-        // this.nextText.on('pointerdown', function () {
-        //     self.socket.emit('nextRound')
-        //     self.dealText.setColor('#00ffff')
-        // })
-
-        // this.nextText.on('pointerover', function () {
-        //     self.nextText.setColor('#ff69b4')
-        // })
-
-        // this.nextText.on('pointerout', function () {
-        //     self.nextText.setColor('#00ffff')
-        // })
 
         let raiseRect = this.add.rectangle(965, 560, 131, 65, 0xe1ad01).setOrigin(0)
         .setInteractive({ useHandCursor: true })
