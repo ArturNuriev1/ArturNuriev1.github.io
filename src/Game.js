@@ -49,7 +49,7 @@ export default class Game extends Phaser.Scene {
         
         let calc = new Calc(this)
 
-        this.add.image(650, 360, 'bg').setScale(0.5, 0.5)
+        this.add.image(650, 360, 'bg')
 
         let load = this.add.image(270, 380, 'load', 0).setScale(0.5, 0.5)
         
