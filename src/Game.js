@@ -16,7 +16,7 @@ export default class Game extends Phaser.Scene {
 	preload() {
         this.load.image('bg', './bg2.jpg')
 		this.load.image('card', './card.png')
-        this.load.image('load', './load.png')
+        this.load.spritesheet('load', './load.png', { frameWidth: 132, frameHeight: 138, startFrame: 0, endFrame: 12 })
 	}
 
 	create() {
@@ -49,9 +49,9 @@ export default class Game extends Phaser.Scene {
         
         let calc = new Calc(this)
 
-        this.add.image(650, 360, 'bg').setScale(1, 1)
+        this.add.image(650, 360, 'bg').setScale(0.5, 0.5)
 
-        let load = this.add.image(270, 380, 'load').setScale(1, 1)
+        let load = this.add.image(270, 380, 'load', 0).setScale(0.5, 0.5)
         
 		this.socket = io('https://air-poker-server.onrender.com')
 		// this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
