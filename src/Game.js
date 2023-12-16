@@ -16,7 +16,7 @@ export default class Game extends Phaser.Scene {
 	preload() {
         this.load.image('bg', './bg2.jpg')
 		this.load.image('card', './card.png')
-        this.load.spritesheet('load', './load.png', { frameWidth: 132, frameHeight: 138, startFrame: 0, endFrame: 12 })
+        this.load.spritesheet('load', './load.png', { frameWidth: 200, frameHeight: 200, startFrame: 0, endFrame: 28 })
 	}
 
 	create() {
@@ -48,15 +48,27 @@ export default class Game extends Phaser.Scene {
         this.isPlayerA = false
         
         let calc = new Calc(this)
-
-        this.add.image(650, 360, 'bg')
-
-        let load = this.add.image(270, 380, 'load', 0).setScale(0.5, 0.5)
         
-		this.socket = io('https://air-poker-server.onrender.com')
-		// this.socket = io('https://air-poker-dev-djep.3.us-1.fl0.io')
-		// this.socket = io('https://air-poker-server1.adaptable.app')
-		// this.socket = io('http://localhost:3000')
+        this.add.image(650, 360, 'bg')
+        
+        const config = {
+            key: 'loadGif',
+            frames: this.anims.generateFrameNumbers('load', { start: 0, end: 28, first: 0 }),
+            frameRate: 30,
+            repeat: -1
+        }
+        this.anims.create(config)
+        
+        this.load = this.add.sprite(930, 520, 'load').play('loadGif').setScale(0.25, 0.25)
+        
+        this.loadText = this.add.text(608, 520, "WAITING FOR OPPONENT", {
+            color: 'white', 
+            fontFamily: 'Bahnschrift', 
+            fontSize:50, 
+            align:'center'
+        }).setOrigin(0.5)
+        
+        this.socket = io('https://air-poker-server.onrender.com')
         
         this.socket.on('connect', function () {
             console.log('Connected! ', self.socket.id)
@@ -65,6 +77,14 @@ export default class Game extends Phaser.Scene {
         this.socket.on('isPlayerA', function () {
             console.log('You are Player A')
             self.isPlayerA = true
+        })
+
+        this.socket.on('foundGame', function () {
+            console.log("FOUND")
+            self.dealText.setColor('#00ffff').setInteractive()
+            self.loadText.setText('')
+            self.anims.remove('loadGif')
+            self.load.destroy()
         })
 
         this.socket.on('dealCards', function () { //MAKE THIS SERVER SIDED
@@ -162,7 +182,7 @@ export default class Game extends Phaser.Scene {
             this.updateText()
         }
 
-		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setInteractive()
+		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#708090').disableInteractive()
 
         let raiseRect = this.add.rectangle(965, 560, 131, 65, 0xe1ad01).setOrigin(0)
         .setInteractive({ useHandCursor: true })
