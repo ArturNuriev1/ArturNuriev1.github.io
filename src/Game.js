@@ -41,10 +41,11 @@ export default class Game extends Phaser.Scene {
         let playerCalled = 0
         let enemyCalled = 0
         let prevBet = 0
-        let calamity = 0
         this.raiseAmount = 0
         let pot = 0
-
+        let playerTotalBet = 0
+        
+        this.calamity = 0
         this.isPlayerA = false
         
         let calc = new Calc(this)
@@ -119,6 +120,9 @@ export default class Game extends Phaser.Scene {
                     enemyArray[5] = tempCard.render(550, 375, 0, enemyVal, 5)
                     newPlayer = tempCard.render(800, 375, 0, playerVal, 5)
                     self.results = calc.law(playerVal, enemyVal)
+                    if (self.results.calamity == true) {
+                        self.calamity = 1
+                    }
                     self.betting = true
                     self.betPhase()
                 }
@@ -180,6 +184,21 @@ export default class Game extends Phaser.Scene {
             eBios -= ante
             pot = 2*ante
             this.updateText()
+        }
+
+        this.calamityText = this.add.text(608, 520, '', {
+            color: 'white', 
+            fontFamily: 'Bahnschrift', 
+            fontSize:50, 
+            align:'center'
+        }).setOrigin(0.5)
+        this.checkCalamity = () => {
+            if (self.calamity == 1) {
+                pot = pot + playerTotalBet
+                // maybe make it small under dealText insteaD? since itll pop up a lot
+                this.calamityText.setText("A CALAMITY HAS OCCURRED!")
+                self.calamity = 0
+            }
         }
 
 		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#708090').disableInteractive()
@@ -498,6 +517,7 @@ export default class Game extends Phaser.Scene {
                     
                     //showdown
                     //if player result > enemyresult move pot
+                    self.checkCalamity()
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
@@ -560,8 +580,8 @@ export default class Game extends Phaser.Scene {
             callNum.setText(callVal)
         }
 
-        // checkVictory
         // calamities
+        // checkVictory
         // comment and style
         // github
 
