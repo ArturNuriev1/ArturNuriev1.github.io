@@ -45,7 +45,7 @@ export default class Game extends Phaser.Scene {
         let pot = 0
         let playerTotalBet = 0
         
-        this.calamity = 0
+        // let calamity = 0
         this.isPlayerA = false
         
         let calc = new Calc(this)
@@ -74,7 +74,7 @@ export default class Game extends Phaser.Scene {
         this.socket.on('connect', function () {
             console.log('Connected! ', self.socket.id)
         })
-
+        
         this.socket.on('isPlayerA', function () {
             console.log('You are Player A')
             self.isPlayerA = true
@@ -91,6 +91,7 @@ export default class Game extends Phaser.Scene {
         this.socket.on('dealCards', function () { //MAKE THIS SERVER SIDED
             self.dealCards()
             self.dealText.disableInteractive()
+            self.dealText.setColor('#00ffff')
         })
 
         this.socket.on('nextRound', function () {
@@ -120,9 +121,9 @@ export default class Game extends Phaser.Scene {
                     enemyArray[5] = tempCard.render(550, 375, 0, enemyVal, 5)
                     newPlayer = tempCard.render(800, 375, 0, playerVal, 5)
                     self.results = calc.law(playerVal, enemyVal)
-                    if (self.results.calamity == true) {
-                        self.calamity = 1
-                    }
+                    // if (self.results[2] == true) {
+                    //     calamity = 1
+                    // }
                     self.betting = true
                     self.betPhase()
                 }
@@ -132,7 +133,7 @@ export default class Game extends Phaser.Scene {
         this.socket.on('swapBettors', function(resultsNeeded) {
             if (resultsNeeded) {
                 self.time.addEvent({
-                    delay: 1000,
+                    delay: 1500,
                     callback: () => {
                         if (self.results[0].value > self.results[1].value) {
                             numText.setText('The winner is ' + playerVal + '!')
@@ -150,14 +151,26 @@ export default class Game extends Phaser.Scene {
             self.raiseAmount = 0
             self.betting = false
             prevBet = firstBet
-            self.time.addEvent({
-                delay: 3000,
-                callback: () => {
-                    self.socket.emit('nextRound')
-                    personalText.setText('')
-                    numText.setText('')
-                }
-            })
+            if (!resultsNeeded) {
+                self.time.addEvent({
+                    delay: 2000,
+                    callback: () => {
+                        self.socket.emit('nextRound')
+                        personalText.setText('')
+                        numText.setText('')
+                    }
+                })
+            }
+            else {
+                self.time.addEvent({
+                    delay: 3500,
+                    callback: () => {
+                        self.socket.emit('nextRound')
+                        personalText.setText('')
+                        numText.setText('')
+                    }
+                })
+            }
         })
 
         this.betPhase = () => {
@@ -186,20 +199,34 @@ export default class Game extends Phaser.Scene {
             this.updateText()
         }
 
-        this.calamityText = this.add.text(608, 520, '', {
-            color: 'white', 
-            fontFamily: 'Bahnschrift', 
-            fontSize:50, 
-            align:'center'
-        }).setOrigin(0.5)
-        this.checkCalamity = () => {
-            if (self.calamity == 1) {
-                pot = pot + playerTotalBet
-                // maybe make it small under dealText insteaD? since itll pop up a lot
-                this.calamityText.setText("A CALAMITY HAS OCCURRED!")
-                self.calamity = 0
-            }
-        }
+        // this.calamityText = this.add.text(608, 520, '', {
+        //     color: 'white', 
+        //     fontFamily: 'Bahnschrift', 
+        //     fontSize:50, 
+        //     align:'center'
+        // }).setOrigin(0.5)
+
+        // this.checkCalamity = () => {
+        //     if (calamity == 1) {
+        //         console.log("CALAMITY, player bet " + playerTotalBet)
+        //         pot = pot + playerTotalBet
+        //         let currentTime = 0
+        //         let potIncrement = pot
+        //         let interval = 1500 / playerTotalBet
+        //         for (let i = 0; i < playerTotalBet; i++) {
+        //             self.time.addEvent({
+        //                 delay: currentTime += interval,
+        //                 callback: () => {
+        //                     potText.setText(potIncrement++ + " Air-Bios")
+        //                 }
+        //             })
+        //             currentTime = currentTime + interval
+        //         }
+        //         // maybe make it small under dealText insteaD? since itll pop up a lot
+        //         this.calamityText.setText("A CALAMITY HAS OCCURRED!")
+        //         // calamity = 0
+        //     }
+        // }
 
 		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#708090').disableInteractive()
 
@@ -374,6 +401,7 @@ export default class Game extends Phaser.Scene {
 
         // This text could be used to display the values of each card after every round
         // calc.js supports this by returning these values, but it is currently unimplemented
+        // as it would up too much screenspace
 
         // let pRevealText = this.add.text(672, 510, pReveal, {
         //     color: 'white', 
@@ -408,6 +436,7 @@ export default class Game extends Phaser.Scene {
 
         this.fold = () => {
             if (firstBet == 1 && self.betting) {
+                // self.checkCalamity()
                 console.log('Fold!')
                 eBios += pot
                 pot = 0
@@ -427,6 +456,7 @@ export default class Game extends Phaser.Scene {
 
         this.socket.on('enemyFolds', function(isA) {
             if (isA != self.isPlayerA) {
+                // self.checkCalamity()
                 pBios += pot
                 pot = 0
                 self.updateText()
@@ -476,6 +506,12 @@ export default class Game extends Phaser.Scene {
                 resultText.setText('You called!')
                 if (enemyCalled == 1) {
                     //showdown
+                    
+                    // self.checkCalamity()
+                    // self.time.addEvent({
+                    //     delay: calamity ? 3000 : 0,
+                    //     callback: () => {
+                    // calamity = 0
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
@@ -496,6 +532,8 @@ export default class Game extends Phaser.Scene {
                     })
                     self.socket.emit('playerCalls', self.isPlayerA)
                     self.checkVictory()
+
+                    // }})
                 }
                 else {
                     pBios -= self.raiseAmount
@@ -512,12 +550,11 @@ export default class Game extends Phaser.Scene {
 
         this.socket.on('enemyCalls', function(isA) {
             if (isA != self.isPlayerA) {
-                console.log(playerCalled)
                 if (playerCalled == 1) {
                     
                     //showdown
                     //if player result > enemyresult move pot
-                    self.checkCalamity()
+                    // self.checkCalamity()
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
@@ -539,7 +576,6 @@ export default class Game extends Phaser.Scene {
                     self.checkVictory()
                 }
                 else {
-                    console.log(self.raiseAmount)
                     eBios -= self.raiseAmount
                     pot += self.raiseAmount
                     self.updateText()
@@ -580,17 +616,30 @@ export default class Game extends Phaser.Scene {
             callNum.setText(callVal)
         }
 
-        // calamities
         // checkVictory
         // comment and style
         // github
 
-        this.checkVictory = () => {
-            if (pBios <= 0) {
-                
-            }
-            if (eBios <= 0) {
+        let winScreen = this.add.rectangle(0, 0, 1500, 1500, 0x000000, 0).setOrigin(0).setDepth(1);
+        let currentTime = 0
 
+        this.checkVictory = () => {
+            
+            if (pBios <= 0 || eBios <= 0) {
+                self.time.addEvent({
+                    delay: 2000,
+                    callback: () => {
+                        for (let i = 0; i < 80; i++) {
+                            self.time.addEvent({
+                                delay: currentTime,
+                                callback: () => {
+                                    winScreen.fillAlpha = i/100
+                                }
+                            })
+                            currentTime += 10
+                        }
+                    }
+                })
             }
         }
 
@@ -616,6 +665,7 @@ export default class Game extends Phaser.Scene {
         }
 
         this.socket.on('cardsPicked', function (isA, playerVals, enemyVals) {
+            console.log("Picking cards...")
             if (isA != self.isPlayerA) {
                 for (let i = 0; i < 5; i++) {
                     let enemyCard = new Card(self)

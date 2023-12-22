@@ -49,7 +49,7 @@ export default class Calc {
             this.updateCards(oldCards, newCards)
             cards = Object.assign({}, oldCards)
             console.log(playerResult)
-            return [playerResult, enemyResult, this.calamity]
+            return [playerResult, enemyResult, calamity]
         }
         this.updateCards = (oldCards, newCards) => {
             for (let i = 13; i >= 1; i--) {
