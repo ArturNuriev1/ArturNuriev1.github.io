@@ -37,7 +37,8 @@ export default class Game extends Phaser.Scene {
         let eBios = 25
         let callVal = 1
         let firstBet = 2
-        let enemyBet = 0
+        let currentBet = 0
+        let enemyRaised = 0
         let playerCalled = 0
         let enemyCalled = 0
         let prevBet = 0
@@ -88,7 +89,7 @@ export default class Game extends Phaser.Scene {
             self.load.destroy()
         })
 
-        this.socket.on('dealCards', function () { //MAKE THIS SERVER SIDED
+        this.socket.on('dealCards', function () {
             self.dealCards()
             self.dealText.disableInteractive()
             self.dealText.setColor('#00ffff')
@@ -316,14 +317,14 @@ export default class Game extends Phaser.Scene {
         this.outline = this.zone.renderOutline(this.playerZone, 0)
         this.outline = this.zone.renderOutline(this.enemyZone, 1)
 
-        let enemyText = this.add.text(895, 295, 'Enemy Bet:', {
+        let enemyText = this.add.text(878, 295, 'Current Bet:', {
             color: 'white', 
             fontFamily: 'Bahnschrift', 
             fontSize:38, 
             align:'justify'
         }).setOrigin(0)
 
-        let enemyBetText = this.add.text(1093, 295, enemyBet + ' Air-Bios', {
+        let currentBetText = this.add.text(1093, 295, currentBet + ' Air-Bios', {
             color: 'white', 
             fontFamily: 'Bahnschrift', 
             fontSize:38, 
@@ -426,7 +427,7 @@ export default class Game extends Phaser.Scene {
         }).setOrigin(0.5)
 
         this.updateText = () => {
-            enemyBetText.setText(enemyBet + ' Air-Bios')
+            currentBetText.setText(currentBet + ' Air-Bios')
             potText.setText(pot + ' Air-Bios')
             //anteText.setText(ante + ' Air-Bios')
             pBiosText.setText(pBios + ' Air-Bios')
@@ -442,6 +443,7 @@ export default class Game extends Phaser.Scene {
                 pot = 0
                 self.socket.emit('swapBettors', false)
                 self.socket.emit('playerFolds', self.isPlayerA)
+                currentBet = 0
                 this.updateText()
                 resultText.setText('You folded!')
                 self.time.addEvent({
@@ -459,6 +461,7 @@ export default class Game extends Phaser.Scene {
                 // self.checkCalamity()
                 pBios += pot
                 pot = 0
+                currentBet = 0
                 self.updateText()
                 resultText.setText('Enemy folded!')
                 self.time.addEvent({
@@ -490,11 +493,13 @@ export default class Game extends Phaser.Scene {
 
         this.socket.on('enemyRaises', function(isA, raiseAmount) {
             if (isA != self.isPlayerA) {
+                enemyRaised = 1
                 self.raiseAmount = raiseAmount
                 pot += raiseAmount
                 eBios -= raiseAmount
                 firstBet = 1
                 enemyCalled = 0
+                currentBet = raiseAmount
                 self.updateText()
                 personalText.setText('Your turn to bet')
                 resultText.setText('Enemy raised ' + raiseAmount + ' Air-Bios!')
@@ -523,6 +528,7 @@ export default class Game extends Phaser.Scene {
                     playerCalled = 0
                     enemyCalled = 0
                     self.socket.emit('swapBettors', true)
+                    currentBet = 0
                     self.updateText()
                     self.time.addEvent({
                         delay: 1000,
@@ -565,6 +571,7 @@ export default class Game extends Phaser.Scene {
                     }
                     playerCalled = 0
                     enemyCalled = 0
+                    currentBet = 0
                     resultText.setText('Enemy called!')
                     self.time.addEvent({
                         delay: 2000,
@@ -617,19 +624,59 @@ export default class Game extends Phaser.Scene {
         }
 
         // checkVictory
+        
+        // fix raise/call bug
+
         // comment and style
+
         // github
 
         let winScreen = this.add.rectangle(0, 0, 1500, 1500, 0x000000, 0).setOrigin(0).setDepth(1);
         let currentTime = 0
 
-        this.checkVictory = () => {
-            
-            if (pBios <= 0 || eBios <= 0) {
+        let victoryText = this.add.text(665, 300, "", {
+            color: '#e1ad01', 
+            fontFamily: 'Bahnschrift', 
+            fontSize: 60, 
+            align:'center'
+        }).setOrigin(0.5)
+        .setStroke('#ffffff', 3).setAlpha(0).setDepth(2)
+        
+        let repeatText = this.add.text(
+            600, 420, "PLAY AGAIN?"
+        ).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setAlpha(0).setDepth(2).setInteractive()
+
+        repeatText.on('pointerdown', function () {
+            self.socket.emit('pickCards', self.isPlayerA)
+            repeatText.setColor('#00ffff')
+        })
+
+        repeatText.on('pointerover', function () {
+            repeatText.setColor('#ff69b4')
+        })
+
+        repeatText.on('pointerout', function () {
+            repeatText.setColor('#00ffff')
+        })
+
+        repeatText.on('pointerdown', function () {
+            self.socket.emit('pickCards', self.isPlayerA)
+            repeatText.setAlpha(0)
+        })
+
+        this.checkVictory = (isVic, isPlayerA) => {
+            if (pBios <= 0 || eBios <= 0 || isVic) {
+                if (pBios >= eBios) {
+                    victoryText.setText(self.isPlayerA ? "YOU WON" : "ENEMY WON")
+                }
+                else {
+                    console.log(this.isPlayerA)
+                    victoryText.setText(self.isPlayerA ? "ENEMY WON" : "YOU WON")
+                }
                 self.time.addEvent({
-                    delay: 2000,
+                    delay: 1000,
                     callback: () => {
-                        for (let i = 0; i < 80; i++) {
+                        for (let i = 0; i <= 80; i++) {
                             self.time.addEvent({
                                 delay: currentTime,
                                 callback: () => {
@@ -640,29 +687,74 @@ export default class Game extends Phaser.Scene {
                         }
                     }
                 })
+                currentTime = 0
+                self.time.addEvent({
+                    delay: 1800,
+                    callback: () => {
+                        for (let i = 0; i <= 100; i++) {
+                            self.time.addEvent({
+                                delay: currentTime,
+                                callback: () => {
+                                    victoryText.setAlpha(i/100)
+                                }
+                            })
+                            currentTime += 10
+                        }
+                    }
+                })
+                currentTime = 0
+                self.time.addEvent({
+                    delay: 2500,
+                    callback: () => {
+                        for (let i = 0; i <= 100; i++) {
+                            self.time.addEvent({
+                                delay: currentTime,
+                                callback: () => {
+                                    repeatText.setAlpha(i/100)
+                                }
+                            })
+                            currentTime += 10
+                        }
+                    }
+                })
             }
         }
 
+        this.input.keyboard.on('keydown-W', function () {self.checkVictory(true)})
+
 		this.dealCards = () => {
             self.socket.emit('pickCards', self.isPlayerA)
-            // for (let i = 0; i < 5; i++) {
-            //     let val = Phaser.Math.Between(6, 64)
-            //     while (pickedVals.includes(val)) {
-            //         val = Phaser.Math.Between(6, 64)
-            //     }
-            //     pickedVals.push(val)
-            //     //console.log(pickedVals)
-            //     let enemyCard = new Card(this)
-            //     enemyArray[i] = enemyCard.render(475 + (i * 100), 75, 'card', val, i)
-            //     let val2 = Phaser.Math.Between(6, 64)
-            //     while (pickedVals.includes(val2)) {
-            //         val2 = Phaser.Math.Between(6, 64)
-            //     }
-            //     pickedVals.push(val2)
-            //     let playerCard = new Card(this)
-            //     playerArray[i] = playerCard.render(475 + (i * 100), 645, 0, val2, i)
-            // }
         }
+
+        this.reset = () => {
+            self.socket.emit('resetGame')
+            self.socket.emit('pickCards')
+        }
+
+        this.socket.on('resetGame', function () {
+            winScreen.fillAlpha = 0
+            victoryText.setAlpha(0)
+            repeatText.setAlpha(0)
+            enemyArray = []
+            playerArray = []
+            playerPlayed = 0
+            enemyPlayed = 0
+            let newPlayer = new Card(self)
+            ante = 1
+            pBios = 25
+            eBios = 25
+            callVal = 1
+            firstBet = 2
+            currentBet = 0
+            enemyRaised = 0
+            playerCalled = 0
+            enemyCalled = 0
+            prevBet = 0
+            self.raiseAmount = 0
+            pot = 0
+            playerTotalBet = 0            
+            calc = new Calc(this);
+        })
 
         this.socket.on('cardsPicked', function (isA, playerVals, enemyVals) {
             console.log("Picking cards...")
@@ -733,7 +825,6 @@ export default class Game extends Phaser.Scene {
                 gameObject.y = gameObject.input.dragStartY
             }
         })
-
 
 	}
 
