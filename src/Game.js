@@ -452,7 +452,10 @@ export default class Game extends Phaser.Scene {
                         resultText.setText('')
                     }
                 })
-                self.checkVictory()
+                self.time.addEvent({
+                    delay: 4000,
+                    callback: () => { self.checkVictory() }
+                })
             }
         }
 
@@ -470,7 +473,10 @@ export default class Game extends Phaser.Scene {
                         resultText.setText('')
                     }
                 })
-                self.checkVictory()
+                self.time.addEvent({
+                    delay: 4000,
+                    callback: () => { self.checkVictory() }
+                })
             }
         })
 
@@ -537,7 +543,10 @@ export default class Game extends Phaser.Scene {
                         }
                     })
                     self.socket.emit('playerCalls', self.isPlayerA)
-                    self.checkVictory()
+                    self.time.addEvent({
+                        delay: 4000,
+                        callback: () => { self.checkVictory() }
+                    })
 
                     // }})
                 }
@@ -580,7 +589,10 @@ export default class Game extends Phaser.Scene {
                         }
                     })
                     self.updateText()
-                    self.checkVictory()
+                    self.time.addEvent({
+                        delay: 4000,
+                        callback: () => { self.checkVictory() }
+                    })
                 }
                 else {
                     eBios -= self.raiseAmount
@@ -622,9 +634,7 @@ export default class Game extends Phaser.Scene {
             }
             callNum.setText(callVal)
         }
-
-        // checkVictory
-        
+      
         // fix raise/call bug
 
         // comment and style
@@ -728,7 +738,7 @@ export default class Game extends Phaser.Scene {
 
         this.reset = () => {
             self.socket.emit('resetGame')
-            self.socket.emit('pickCards')
+            self.socket.emit('pickCards', self.isPlayerA)
         }
 
         this.socket.on('resetGame', function () {
@@ -753,7 +763,7 @@ export default class Game extends Phaser.Scene {
             self.raiseAmount = 0
             pot = 0
             playerTotalBet = 0            
-            calc = new Calc(this);
+            calc = new Calc(this)
         })
 
         this.socket.on('cardsPicked', function (isA, playerVals, enemyVals) {
