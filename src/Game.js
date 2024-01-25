@@ -635,7 +635,7 @@ export default class Game extends Phaser.Scene {
             callNum.setText(callVal)
         }
       
-        // fix raise/call bug
+        // fix raise/call bug - make raises add to the call and check if its larger than amount of remaining air bios
 
         // comment and style
 
@@ -654,10 +654,10 @@ export default class Game extends Phaser.Scene {
         
         let repeatText = this.add.text(
             600, 420, "PLAY AGAIN?"
-        ).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setAlpha(0).setDepth(2).setInteractive()
+        ).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#00ffff').setAlpha(0).setDepth(2).disableInteractive()
 
         repeatText.on('pointerdown', function () {
-            self.socket.emit('pickCards', self.isPlayerA)
+            self.socket.emit('resetGame', self.isPlayerA)
             repeatText.setColor('#00ffff')
         })
 
@@ -676,6 +676,9 @@ export default class Game extends Phaser.Scene {
 
         this.checkVictory = (isVic, isPlayerA) => {
             if (pBios <= 0 || eBios <= 0 || isVic) {
+                for (let i = 0; i < 5; i++) {
+                    playerArray[i].disableInteractive()
+                }
                 if (pBios >= eBios) {
                     victoryText.setText(self.isPlayerA ? "YOU WON" : "ENEMY WON")
                 }
@@ -716,6 +719,7 @@ export default class Game extends Phaser.Scene {
                 self.time.addEvent({
                     delay: 2500,
                     callback: () => {
+                        repeatText.setInteractive()
                         for (let i = 0; i <= 100; i++) {
                             self.time.addEvent({
                                 delay: currentTime,
@@ -737,14 +741,20 @@ export default class Game extends Phaser.Scene {
         }
 
         this.reset = () => {
+            console.log("Sent reset request to server")
             self.socket.emit('resetGame')
             self.socket.emit('pickCards', self.isPlayerA)
         }
 
         this.socket.on('resetGame', function () {
+            console.log("RESETTING")
+            for (let i = 0; i < 5; i++) {
+                playerArray[i].destroy()
+            }
             winScreen.fillAlpha = 0
             victoryText.setAlpha(0)
             repeatText.setAlpha(0)
+            repeatText.disableInteractive()
             enemyArray = []
             playerArray = []
             playerPlayed = 0
