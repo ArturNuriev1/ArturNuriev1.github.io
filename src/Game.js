@@ -749,12 +749,14 @@ export default class Game extends Phaser.Scene {
         this.socket.on('resetGame', function () {
             console.log("RESETTING")
             for (let i = 0; i < 5; i++) {
-                playerArray[i].destroy()
+                if(typeof playerArray[i] !== 'undefined') {
+                    playerArray[i].destroy()
+                }
             }
             winScreen.fillAlpha = 0
             victoryText.setAlpha(0)
-            repeatText.setAlpha(0)
             repeatText.disableInteractive()
+            repeatText.setAlpha(0)
             enemyArray = []
             playerArray = []
             playerPlayed = 0
@@ -831,7 +833,6 @@ export default class Game extends Phaser.Scene {
             if (dropZone.data.values.cards == 0) {
                 dropZone.data.values.cards = 1
                 tempImg2 = this.scene.add.image(800, 375, 'card').setScale(0.15)
-                gameObject.destroy()
                 gameObject.destroy()
                 self.socket.emit('enemyPlays', gameObject.index, self.isPlayerA, gameObject.value)
                 playerPlayed = 1
