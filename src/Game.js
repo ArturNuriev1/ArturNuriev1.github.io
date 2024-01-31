@@ -197,6 +197,7 @@ export default class Game extends Phaser.Scene {
             pBios -= ante
             eBios -= ante
             pot = 2*ante
+            self.checkVictory()
             this.updateText()
         }
 
@@ -481,19 +482,22 @@ export default class Game extends Phaser.Scene {
         })
 
         this.raise = () => {
-            if (firstBet == 1 && self.betting) {
+            console.log(pBios + currentBet)
+            console.log(eBios + currentBet)
+            console.log(currentBet)
+            if (firstBet == 1 && self.betting && pBios >=  callVal + currentBet && eBios >= callVal + currentBet) {
                 console.log('Raise!')
                 if (callVal > pBios) {
                     callVal = pBios
                 }
-                pBios -= callVal
-                pot += callVal
+                pBios -= callVal + self.raiseAmount
+                pot += callVal + self.raiseAmount
                 firstBet = 0
                 self.raiseAmount += callVal
                 self.updateText()
                 personalText.setText('Enemy\'s turn to bet')
                 resultText.setText('You raised ' + callVal + ' Air-Bios!')
-                self.socket.emit('playerRaises', self.isPlayerA, callVal)
+                self.socket.emit('playerRaises', self.isPlayerA, self.raiseAmount)
             }
         }
 
@@ -676,8 +680,10 @@ export default class Game extends Phaser.Scene {
 
         this.checkVictory = (isVic, isPlayerA) => {
             if (pBios <= 0 || eBios <= 0 || isVic) {
-                for (let i = 0; i < 5; i++) {
-                    playerArray[i].disableInteractive()
+                for (const item of playerArray) {
+                    if (item.scene !== undefined) {
+                        item.disableInteractive()
+                    }
                 }
                 if (pBios >= eBios) {
                     victoryText.setText(self.isPlayerA ? "YOU WON" : "ENEMY WON")
@@ -748,9 +754,9 @@ export default class Game extends Phaser.Scene {
 
         this.socket.on('resetGame', function () {
             console.log("RESETTING")
-            for (let i = 0; i < 5; i++) {
-                if(typeof playerArray[i] !== 'undefined') {
-                    playerArray[i].destroy()
+            for (const item of playerArray) {
+                if (item.scene !== undefined) {
+                    item.destroy()
                 }
             }
             winScreen.fillAlpha = 0
