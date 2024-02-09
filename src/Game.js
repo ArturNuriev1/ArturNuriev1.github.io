@@ -153,7 +153,6 @@ export default class Game extends Phaser.Scene {
                     }
                 })
             }
-            console.log(ante)
             if (ante == 5) {
                 self.time.addEvent({
                     delay: 4000,
@@ -544,7 +543,6 @@ export default class Game extends Phaser.Scene {
                     // calamity = 0
 
                     // Check who has better hand
-                    console.log(self.results)
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
