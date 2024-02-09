@@ -48,7 +48,8 @@ export default class Game extends Phaser.Scene {
         
         // variable to keep track between the two clients
         this.isPlayerA = false
-        
+                
+        // The poker hand calculations are done using the calc.js class
         let calc = new Calc(this)
         
 
