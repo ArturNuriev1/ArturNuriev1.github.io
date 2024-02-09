@@ -20,7 +20,6 @@ export default class Game extends Phaser.Scene {
 	}
 
 	create() {
-
         let self = this
 
         let enemyArray = []
@@ -45,14 +44,18 @@ export default class Game extends Phaser.Scene {
         this.raiseAmount = 0
         let pot = 0
         let playerTotalBet = 0
-        
         // let calamity = 0
+        
+        // variable to keep track between the two clients
         this.isPlayerA = false
         
         let calc = new Calc(this)
         
+
+        // set background image
         this.add.image(650, 360, 'bg')
         
+        // animation config for the loading gif
         const config = {
             key: 'loadGif',
             frames: this.anims.generateFrameNumbers('load', { start: 0, end: 28, first: 0 }),
@@ -70,6 +73,8 @@ export default class Game extends Phaser.Scene {
             align:'center'
         }).setOrigin(0.5)
         
+
+        // server hosted for free via render
         this.socket = io('https://air-poker-server.onrender.com')
         
         this.socket.on('connect', function () {
@@ -82,7 +87,6 @@ export default class Game extends Phaser.Scene {
         })
 
         this.socket.on('foundGame', function () {
-            console.log("FOUND")
             self.dealText.setColor('#00ffff').setInteractive()
             self.loadText.setText('')
             self.anims.remove('loadGif')
@@ -96,6 +100,7 @@ export default class Game extends Phaser.Scene {
         })
 
         this.socket.on('nextRound', function () {
+            // delete the cards that are in each dropzone
             enemyArray[5].x = 10000
             newPlayer.x = 10000
             playerPlayed = 0
@@ -131,6 +136,7 @@ export default class Game extends Phaser.Scene {
             })
         })
 
+        // Triggered after betting ends in order to clean up and start next round
         this.socket.on('swapBettors', function(resultsNeeded) {
             if (resultsNeeded) {
                 self.time.addEvent({
@@ -139,12 +145,25 @@ export default class Game extends Phaser.Scene {
                         if (self.results[0].value > self.results[1].value) {
                             numText.setText('The winner is ' + playerVal + '!')
                         }
+
                         else {
                             numText.setText('The winner is ' + enemyVal + '!')
                         }
                     }
                 })
             }
+            console.log(ante)
+            if (ante == 5) {
+                self.time.addEvent({
+                    delay: 4000,
+                    callback: () => {
+                        self.checkVictory(true)
+                        return
+                    }
+                })
+            }
+
+            // Swap the person who bets first next round
             if (prevBet == firstBet) {
                 firstBet = 1 - firstBet
             }
@@ -152,6 +171,8 @@ export default class Game extends Phaser.Scene {
             self.raiseAmount = 0
             self.betting = false
             prevBet = firstBet
+
+            // Helps make the timing of the animations smoother
             if (!resultsNeeded) {
                 self.time.addEvent({
                     delay: 2000,
@@ -162,6 +183,7 @@ export default class Game extends Phaser.Scene {
                     }
                 })
             }
+
             else {
                 self.time.addEvent({
                     delay: 3500,
@@ -175,6 +197,8 @@ export default class Game extends Phaser.Scene {
         })
 
         this.betPhase = () => {
+            // firstBet is initialised with 2, so this means that it is currently the first betting turn in the 
+            // game and that the betting order is determined by the number on each player's chosen card
             if (firstBet == 2) {
                 if (playerVal < enemyVal) {
                     firstBet = 1
@@ -185,6 +209,8 @@ export default class Game extends Phaser.Scene {
                     personalText.setText('Enemy\'s turn to bet')
                 }
             }
+
+            // Otherwise each player takes turns to have betting priority
             else {
                 if (firstBet == 1) {
                     personalText.setText('Your turn to bet')
@@ -193,6 +219,7 @@ export default class Game extends Phaser.Scene {
                     personalText.setText('Enemy\'s turn to bet')
                 }
             }
+
             prevBet = firstBet
             pBios -= ante
             eBios -= ante
@@ -224,13 +251,13 @@ export default class Game extends Phaser.Scene {
         //             })
         //             currentTime = currentTime + interval
         //         }
-        //         // maybe make it small under dealText insteaD? since itll pop up a lot
         //         this.calamityText.setText("A CALAMITY HAS OCCURRED!")
         //         // calamity = 0
         //     }
         // }
 
-		this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#708090').disableInteractive()
+
+        // Buttons for calling/raising/folding and changing raise amount
 
         let raiseRect = this.add.rectangle(965, 560, 131, 65, 0xe1ad01).setOrigin(0)
         .setInteractive({ useHandCursor: true })
@@ -311,6 +338,7 @@ export default class Game extends Phaser.Scene {
         }).setOrigin(0.5)
         .setStroke('#ffffff', 3)
 
+        // create the dropzone to place the card in
         this.zone = new Zone(this)
         this.playerZone = this.zone.renderZone(0)
         this.enemyZone = this.zone.renderZone(1)
@@ -345,21 +373,6 @@ export default class Game extends Phaser.Scene {
             fontSize:38, 
             align:'left'
         }).setOrigin(0)
-
-        // let roundText = this.add.text(955, 395, 'Ante:', {
-        //     color: 'white', 
-        //     fontFamily: 'Bahnschrift', 
-        //     fontSize:38, 
-        //     align:'justify'
-        // }).setOrigin(0)
-
-        // let anteText = this.add.text(1050, 395, ante + ' Air-Bios', {
-        //     color: 'white', 
-        //     fontFamily: 'Bahnschrift', 
-        //     fontSize:38, 
-        //     align:'justify'
-        // }).setOrigin(0)
-
 
         let pBalance = this.add.text(70, 580, 'Player Balance:', {
             color: 'white', 
@@ -403,7 +416,7 @@ export default class Game extends Phaser.Scene {
 
         // This text could be used to display the values of each card after every round
         // calc.js supports this by returning these values, but it is currently unimplemented
-        // as it would up too much screenspace
+        // as it would take up too much screenspace
 
         // let pRevealText = this.add.text(672, 510, pReveal, {
         //     color: 'white', 
@@ -447,12 +460,14 @@ export default class Game extends Phaser.Scene {
                 currentBet = 0
                 this.updateText()
                 resultText.setText('You folded!')
+
                 self.time.addEvent({
                     delay: 1000,
                     callback: () => {
                         resultText.setText('')
                     }
                 })
+
                 self.time.addEvent({
                     delay: 4000,
                     callback: () => { self.checkVictory() }
@@ -468,12 +483,14 @@ export default class Game extends Phaser.Scene {
                 currentBet = 0
                 self.updateText()
                 resultText.setText('Enemy folded!')
+
                 self.time.addEvent({
                     delay: 1000,
                     callback: () => {
                         resultText.setText('')
                     }
                 })
+
                 self.time.addEvent({
                     delay: 4000,
                     callback: () => { self.checkVictory() }
@@ -482,18 +499,13 @@ export default class Game extends Phaser.Scene {
         })
 
         this.raise = () => {
-            console.log(pBios + currentBet)
-            console.log(eBios + currentBet)
-            console.log(currentBet)
-            if (firstBet == 1 && self.betting && pBios >=  callVal + currentBet && eBios >= callVal + currentBet) {
+            if (firstBet == 1 && self.betting && pBios >= callVal + currentBet && eBios >= callVal + currentBet) {
                 console.log('Raise!')
-                if (callVal > pBios) {
-                    callVal = pBios
-                }
                 pBios -= callVal + self.raiseAmount
                 pot += callVal + self.raiseAmount
                 firstBet = 0
                 self.raiseAmount += callVal
+
                 self.updateText()
                 personalText.setText('Enemy\'s turn to bet')
                 resultText.setText('You raised ' + callVal + ' Air-Bios!')
@@ -505,11 +517,14 @@ export default class Game extends Phaser.Scene {
             if (isA != self.isPlayerA) {
                 enemyRaised = 1
                 self.raiseAmount = raiseAmount
+
                 pot += raiseAmount
                 eBios -= raiseAmount
+
                 firstBet = 1
                 enemyCalled = 0
                 currentBet = raiseAmount
+
                 self.updateText()
                 personalText.setText('Your turn to bet')
                 resultText.setText('Enemy raised ' + raiseAmount + ' Air-Bios!')
@@ -519,14 +534,16 @@ export default class Game extends Phaser.Scene {
         this.call = () => {
             if (firstBet == 1 && self.betting) {
                 resultText.setText('You called!')
+                // If enemy has called, proceed to showdown
                 if (enemyCalled == 1) {
-                    //showdown
-                    
                     // self.checkCalamity()
                     // self.time.addEvent({
                     //     delay: calamity ? 3000 : 0,
                     //     callback: () => {
                     // calamity = 0
+
+                    // Check who has better hand
+                    console.log(self.results)
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
@@ -535,11 +552,13 @@ export default class Game extends Phaser.Scene {
                         eBios += pot
                         pot = 0
                     }
+
                     playerCalled = 0
                     enemyCalled = 0
                     self.socket.emit('swapBettors', true)
                     currentBet = 0
                     self.updateText()
+
                     self.time.addEvent({
                         delay: 1000,
                         callback: () => {
@@ -551,12 +570,11 @@ export default class Game extends Phaser.Scene {
                         delay: 4000,
                         callback: () => { self.checkVictory() }
                     })
-
-                    // }})
                 }
                 else {
                     pBios -= self.raiseAmount
                     pot += self.raiseAmount
+
                     self.updateText()
                     self.socket.emit('playerCalls', self.isPlayerA)
                     firstBet = 0
@@ -569,11 +587,9 @@ export default class Game extends Phaser.Scene {
 
         this.socket.on('enemyCalls', function(isA) {
             if (isA != self.isPlayerA) {
+                // If enemy has called, proceed to showdown
                 if (playerCalled == 1) {
-                    
-                    //showdown
-                    //if player result > enemyresult move pot
-                    // self.checkCalamity()
+                    // Check who has better hand
                     if (self.results[0].value > self.results[1].value) {
                         pBios += pot
                         pot = 0
@@ -582,10 +598,12 @@ export default class Game extends Phaser.Scene {
                         eBios += pot
                         pot = 0
                     }
+
                     playerCalled = 0
                     enemyCalled = 0
                     currentBet = 0
                     resultText.setText('Enemy called!')
+
                     self.time.addEvent({
                         delay: 2000,
                         callback: () => {
@@ -601,16 +619,19 @@ export default class Game extends Phaser.Scene {
                 else {
                     eBios -= self.raiseAmount
                     pot += self.raiseAmount
+
                     self.updateText()
                     self.raiseAmount = 0
                     enemyCalled = 1
                     firstBet = 1
+
                     personalText.setText('Your turn to bet')
                     resultText.setText('Enemy called!')
                 }
             }
         })
 
+        // Increase raise amount by 1
         this.incRaise = () => {
             if (callVal == 1) {
                 callMinus.setInteractive()
@@ -625,6 +646,7 @@ export default class Game extends Phaser.Scene {
             callNum.setText(callVal)
         }
 
+        // Decrease raise amount by 1
         this.decRaise = () => {
             if (callVal == 5) {
                 callPlus.setInteractive()
@@ -638,12 +660,6 @@ export default class Game extends Phaser.Scene {
             }
             callNum.setText(callVal)
         }
-      
-        // fix raise/call bug - make raises add to the call and check if its larger than amount of remaining air bios
-
-        // comment and style
-
-        // github
 
         let winScreen = this.add.rectangle(0, 0, 1500, 1500, 0x000000, 0).setOrigin(0).setDepth(1);
         let currentTime = 0
@@ -678,20 +694,25 @@ export default class Game extends Phaser.Scene {
             repeatText.setAlpha(0)
         })
 
+        // Handle player or enemy victory
         this.checkVictory = (isVic, isPlayerA) => {
             if (pBios <= 0 || eBios <= 0 || isVic) {
+                // Disable player's cards
                 for (const item of playerArray) {
                     if (item.scene !== undefined) {
                         item.disableInteractive()
                     }
                 }
+
+                // Check which player won and which player it is displaying for
                 if (pBios >= eBios) {
                     victoryText.setText(self.isPlayerA ? "YOU WON" : "ENEMY WON")
                 }
                 else {
-                    console.log(this.isPlayerA)
                     victoryText.setText(self.isPlayerA ? "ENEMY WON" : "YOU WON")
                 }
+
+                // Fade in the low opacity black screen
                 self.time.addEvent({
                     delay: 1000,
                     callback: () => {
@@ -706,6 +727,8 @@ export default class Game extends Phaser.Scene {
                         }
                     }
                 })
+
+                // Fade in the victory text and repeat game text the same way
                 currentTime = 0
                 self.time.addEvent({
                     delay: 1800,
@@ -721,6 +744,7 @@ export default class Game extends Phaser.Scene {
                         }
                     }
                 })
+
                 currentTime = 0
                 self.time.addEvent({
                     delay: 2500,
@@ -740,7 +764,7 @@ export default class Game extends Phaser.Scene {
             }
         }
 
-        this.input.keyboard.on('keydown-W', function () {self.checkVictory(true)})
+        // this.input.keyboard.on('keydown-W', function () {self.checkVictory(true)})
 
 		this.dealCards = () => {
             self.socket.emit('pickCards', self.isPlayerA)
@@ -752,17 +776,22 @@ export default class Game extends Phaser.Scene {
             self.socket.emit('pickCards', self.isPlayerA)
         }
 
+        // Triggered upon either player choosing to play again
         this.socket.on('resetGame', function () {
-            console.log("RESETTING")
+            // Destroy all the player cards
             for (const item of playerArray) {
                 if (item.scene !== undefined) {
                     item.destroy()
                 }
             }
+
+            // Remove the victory screen
             winScreen.fillAlpha = 0
             victoryText.setAlpha(0)
-            repeatText.disableInteractive()
             repeatText.setAlpha(0)
+            repeatText.disableInteractive()
+
+            // Reset all modified variables
             enemyArray = []
             playerArray = []
             playerPlayed = 0
@@ -784,9 +813,11 @@ export default class Game extends Phaser.Scene {
             calc = new Calc(this)
         })
 
+        // After values for the cards have been generated in the server, create the cards for player and enemy
         this.socket.on('cardsPicked', function (isA, playerVals, enemyVals) {
-            console.log("Picking cards...")
+            // Check which player it is generating cards for
             if (isA != self.isPlayerA) {
+                // Generate player and enemy cards
                 for (let i = 0; i < 5; i++) {
                     let enemyCard = new Card(self)
                     enemyArray[i] = enemyCard.render(475 + (i * 100), 75, 'card', enemyVals[i], i)
@@ -794,6 +825,7 @@ export default class Game extends Phaser.Scene {
                     playerArray[i] = playerCard.render(475 + (i * 100), 645, 0, playerVals[i], i)
                 }
             }
+
             else {
                 for (let i = 0; i < 5; i++) {
                     let enemyCard = new Card(self)
@@ -802,8 +834,11 @@ export default class Game extends Phaser.Scene {
                     playerArray[i] = playerCard.render(475 + (i * 100), 645, 0, enemyVals[i], i)
                 }
             }
+
             self.dealText.disableInteractive()
         })
+
+        this.dealText = this.add.text(100, 370, ['DEAL CARDS']).setFontSize(24).setFontFamily('Trebuchet MS').setColor('#708090').disableInteractive()
 
         this.dealText.on('pointerdown', function () {
             self.socket.emit('pickCards', self.isPlayerA)
@@ -834,19 +869,29 @@ export default class Game extends Phaser.Scene {
             }
         })
 
+        // If player drops card into dropzone
         this.input.on('drop', function (pointer, gameObject, dropZone) {
             tempZone = dropZone
+
+            // If the dropzone is empty
             if (dropZone.data.values.cards == 0) {
                 dropZone.data.values.cards = 1
+                // Create a card facing downards in the dropzone and destroy the original dragged card
                 tempImg2 = this.scene.add.image(800, 375, 'card').setScale(0.15)
                 gameObject.destroy()
+                
+                // Display it for the other player
                 self.socket.emit('enemyPlays', gameObject.index, self.isPlayerA, gameObject.value)
                 playerPlayed = 1
                 playerVal = gameObject.value
+
+                // Go to betting if other player already played
                 if (enemyPlayed) {
                     self.socket.emit('revealCards', playerVal, enemyVal)
                 }
             }
+            
+            // Otherwise return the card back
             else {
                 gameObject.x = gameObject.input.dragStartX
                 gameObject.y = gameObject.input.dragStartY
